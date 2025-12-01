@@ -1,0 +1,6 @@
+
+{
+  "name": "QuizDash",
+  "description": "An advanced quiz platform for teachers and students with a focus on anti-cheating measures. Teachers can create question banks, generate quizzes, and monitor student performance with detailed logs. Students take quizzes in a restricted environment that tracks tab switches and disables copy-paste.",
+  "requestFramePermissions": []
+}
