@@ -138,6 +138,11 @@ const SubjectDetailView: React.FC<{subject: Subject; teacherId: string; onBack: 
                                 <div className="text-xs text-gray-400 mt-2">Type: <span className="font-semibold text-gray-300">{q.type}</span></div>
                                 {expandedQuestionId === q.id && (
                                     <div className="mt-3 pt-3 border-t border-gray-600">
+                                        {q.imageUrl && (
+                                            <div className="mb-3">
+                                                <img src={q.imageUrl} alt="Question" className="max-w-md max-h-64 object-contain rounded-lg border border-gray-600 cursor-pointer hover:border-indigo-500 transition-colors" onClick={() => setViewingImageUrl(q.imageUrl)} />
+                                            </div>
+                                        )}
                                         <h4 className="text-sm font-semibold text-gray-400 mb-2">Options & Answer</h4>
                                         {renderAnswerDetails(q)}
                                     </div>

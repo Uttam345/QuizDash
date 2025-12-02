@@ -15,12 +15,24 @@ interface AddQuestionModalProps {
   onQuestionAdded: () => void;
 }
 
-const ImageUploader: React.FC<{ imageUrl: string, setImageUrl: (url: string) => void, placeholder: string }> = ({ imageUrl, setImageUrl, placeholder }) => {
+const ImageUploader: React.FC<{ imageUrl: string, setImageUrl: (url: string) => void, placeholder: string, isQuestionImage?: boolean }> = ({ imageUrl, setImageUrl, placeholder, isQuestionImage = false }) => {
     const inputRef = useRef<HTMLInputElement>(null);
 
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
+            // Validate file size (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                alert('Image size must be less than 2MB. Please choose a smaller image or compress it.');
+                return;
+            }
+            
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select a valid image file.');
+                return;
+            }
+            
             const reader = new FileReader();
             reader.onload = (e) => setImageUrl(e.target?.result as string);
             reader.readAsDataURL(file);
@@ -31,16 +43,24 @@ const ImageUploader: React.FC<{ imageUrl: string, setImageUrl: (url: string) => 
         <div className="flex items-center gap-2">
             {imageUrl ? (
                 <div className="relative group">
-                    <img src={imageUrl} alt="Preview" className="h-10 w-10 object-cover rounded-md" />
-                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => setImageUrl('')} className="text-white text-xs bg-red-600 hover:bg-red-700 p-1 rounded-full">
-                           &times;
-                        </button>
-                    </div>
+                    <img 
+                        src={imageUrl} 
+                        alt="Preview" 
+                        className={`object-contain rounded-md border-2 border-gray-600 ${
+                            isQuestionImage ? 'h-32 w-auto max-w-md' : 'h-16 w-16'
+                        }`} 
+                    />
+                    <button 
+                        onClick={() => setImageUrl('')} 
+                        className="absolute -top-2 -right-2 text-white bg-red-600 hover:bg-red-700 p-1 rounded-full w-6 h-6 flex items-center justify-center shadow-lg"
+                        title="Remove image"
+                    >
+                       ×
+                    </button>
                 </div>
             ) : (
-                 <Button type="button" variant="ghost" onClick={() => inputRef.current?.click()} className="text-xs p-2">
-                    {placeholder}
+                 <Button type="button" variant="ghost" onClick={() => inputRef.current?.click()} className="text-xs p-2 border border-dashed border-gray-600 hover:border-indigo-500">
+                    📷 {placeholder}
                 </Button>
             )}
             <input
@@ -48,7 +68,7 @@ const ImageUploader: React.FC<{ imageUrl: string, setImageUrl: (url: string) => 
                 ref={inputRef}
                 onChange={handleImageChange}
                 className="hidden"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/gif,image/webp"
             />
         </div>
     );
@@ -265,10 +285,12 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({ isOpen, onClose, te
             </div>
           </div>
 
-          <div className="flex items-start gap-2">
+          <div className="space-y-2">
             <textarea value={text} onChange={e => setText(e.target.value)} placeholder="Question Text" rows={3} className="w-full bg-gray-700 border border-gray-600 rounded-md p-2" />
-            <div className="pt-1">
-              <ImageUploader imageUrl={imageUrl} setImageUrl={setImageUrl} placeholder="Add Question Image" />
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-400">Question Image (optional):</label>
+              <ImageUploader imageUrl={imageUrl} setImageUrl={setImageUrl} placeholder="Add Image" isQuestionImage={true} />
+              {imageUrl && <span className="text-xs text-gray-500">✓ Image added</span>}
             </div>
           </div>
          

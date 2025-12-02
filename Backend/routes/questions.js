@@ -35,13 +35,17 @@ const createQuestionValidation = [
   body('imageUrl')
     .optional()
     .trim()
-    .isLength({ max: 2000 }).withMessage('Image URL must be 2000 characters or less'),
+    .isLength({ max: 3500000 }).withMessage('Image size is too large (max 2MB)'),
   body('options')
     .if(body('type').isIn(['single-correct', 'multiple-correct']))
     .isArray({ min: 2 }).withMessage('At least 2 options are required for MCQ')
     .custom((options) => {
       if (!options.every(opt => opt.text && opt.text.trim().length > 0)) {
         throw new Error('All options must have text');
+      }
+      // Validate option imageUrl size (max 2MB base64 = ~3.5MB string)
+      if (options.some(opt => opt.imageUrl && opt.imageUrl.length > 3500000)) {
+        throw new Error('Option image size is too large (max 2MB)');
       }
       return true;
     }),

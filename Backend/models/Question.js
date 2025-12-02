@@ -6,7 +6,7 @@ const questionOptionSchema = new mongoose.Schema({
     required: true,
   },
   imageUrl: {
-    type: String,
+    type: String, // Base64 data URI or external URL (max 2MB image = ~3.5MB base64)
     default: null,
   },
 }, { _id: false });
@@ -22,8 +22,9 @@ const questionSchema = new mongoose.Schema({
     required: true,
   },
   imageUrl: {
-    type: String,
+    type: String, // Base64 data URI or external URL (max 2MB image = ~3.5MB base64)
     default: null,
+    // Note: MongoDB BSON document limit is 16MB, so storing 2MB images as base64 (~3.5MB) is safe
   },
   options: [questionOptionSchema],
   correctAnswerIndex: {
