@@ -157,11 +157,6 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans">
       {renderContent()}
-       <button 
-          onClick={handleResetData} 
-          className="fixed bottom-4 right-4 bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2 rounded-full z-50">
-          Reset All Data
-       </button>
     </div>
   );
 };

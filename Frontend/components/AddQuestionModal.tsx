@@ -90,37 +90,60 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({ isOpen, onClose, te
   };
 
   const handleSaveQuestion = async () => {
+    // Basic validation
+    if (!text.trim()) {
+      alert('Please enter the question text.');
+      return;
+    }
+
     const questionToAdd: any = {
       type: questionType,
       text: text.trim(),
-      imageUrl: imageUrl || undefined,
-      marks,
       difficulty,
+      marks,
       authorId: teacherId,
       subject: subjectName,
     };
 
+    // Add imageUrl only if present
+    if (imageUrl && imageUrl.trim()) {
+      questionToAdd.imageUrl = imageUrl.trim();
+    }
+
     if (questionType === QuestionType.FillInTheBlank) {
-      if (!text.trim() || !correctAnswerText.trim()) {
-        alert('Please fill in the question text and the correct answer.');
+      if (!correctAnswerText.trim()) {
+        alert('Please enter the correct answer.');
         return;
       }
-      questionToAdd.options = [];
       questionToAdd.correctAnswerText = correctAnswerText.trim();
+      // Explicitly omit option-related fields
+      questionToAdd.options = [];
     } else {
-      if (!text.trim() || options.some(o => o.text.trim() === '')) {
-        alert('Please fill out the question and all option texts.');
+      // Validate options
+      const validOptions = options.filter(o => o.text.trim() !== '');
+      if (validOptions.length < 2) {
+        alert('Please provide at least 2 options.');
         return;
       }
-      questionToAdd.options = options.map(o => ({ text: o.text, imageUrl: o.imageUrl || undefined }));
+      
+      questionToAdd.options = validOptions.map(o => ({
+        text: o.text.trim(),
+        ...(o.imageUrl && o.imageUrl.trim() && { imageUrl: o.imageUrl.trim() })
+      }));
+      
       if (questionType === QuestionType.SingleCorrect) {
+        if (correctAnswerIndex >= validOptions.length) {
+          alert('Please select a valid correct answer.');
+          return;
+        }
         questionToAdd.correctAnswerIndex = correctAnswerIndex;
-      } else {
-        if (correctAnswerIndices.length === 0) {
+      } else if (questionType === QuestionType.MultipleCorrect) {
+        const validIndices = correctAnswerIndices.filter(idx => idx < validOptions.length);
+        if (validIndices.length === 0) {
           alert('Please select at least one correct answer.');
           return;
         }
-        questionToAdd.correctAnswerIndices = correctAnswerIndices.sort();
+        questionToAdd.correctAnswerIndices = validIndices.sort((a, b) => a - b);
       }
     }
     
@@ -130,7 +153,7 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({ isOpen, onClose, te
       resetForm();
     } catch (err: any) {
       console.error('Error creating question:', err);
-      alert(err.message || 'Failed to create question');
+      alert(err.message || 'Failed to create question. Please check all fields and try again.');
     }
   };
   

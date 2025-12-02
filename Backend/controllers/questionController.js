@@ -178,17 +178,39 @@ export const createQuestion = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ success: false, errors: errors.array() });
+      console.error('Validation errors:', errors.array());
+      return res.status(400).json({ 
+        success: false, 
+        message: errors.array()[0].msg,
+        errors: errors.array() 
+      });
     }
 
     const questionData = req.body;
+
+    // Additional validation based on question type
+    if (questionData.type === 'fill-in-the-blank') {
+      // Remove options for fill-in-the-blank
+      questionData.options = [];
+      questionData.correctAnswerIndex = null;
+      questionData.correctAnswerIndices = [];
+    } else if (questionData.type === 'single-correct') {
+      // Ensure correct answer fields are clean
+      questionData.correctAnswerText = null;
+      questionData.correctAnswerIndices = [];
+    } else if (questionData.type === 'multiple-correct') {
+      // Ensure correct answer fields are clean
+      questionData.correctAnswerText = null;
+      questionData.correctAnswerIndex = null;
+    }
 
     const question = await Question.create(questionData);
 
     res.status(201).json({ success: true, question });
   } catch (error) {
+    console.error('Create question error:', error);
     const message = process.env.NODE_ENV === 'production' ? 'Server error' : error.message;
-    res.status(500).json({ message });
+    res.status(400).json({ success: false, message });
   }
 };
 
